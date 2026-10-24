@@ -1,0 +1,209 @@
+{
+  "slots": [
+    {
+      "id": "neutral",
+      "label": "中性",
+      "group": "base",
+      "desc": "全身正面中性 A-pose，所有帧的基准"
+    },
+    {
+      "id": "smile",
+      "label": "微笑",
+      "group": "expression",
+      "desc": "嘴角上扬"
+    },
+    {
+      "id": "laugh",
+      "label": "大笑",
+      "group": "expression",
+      "desc": "张嘴笑，可用于答对"
+    },
+    {
+      "id": "blink",
+      "label": "眨眼",
+      "group": "expression",
+      "desc": "闭眼"
+    },
+    {
+      "id": "surprise",
+      "label": "惊讶",
+      "group": "expression",
+      "desc": "睁大眼、微张嘴"
+    },
+    {
+      "id": "confused",
+      "label": "疑惑",
+      "group": "expression",
+      "desc": "歪头/问号感"
+    },
+    {
+      "id": "think",
+      "label": "思考",
+      "group": "expression",
+      "desc": "托腮/眼神向上"
+    },
+    {
+      "id": "sad",
+      "label": "委屈",
+      "group": "expression",
+      "desc": "答错时可用"
+    },
+    {
+      "id": "proud",
+      "label": "得意",
+      "group": "expression",
+      "desc": "答对/被夸"
+    },
+    {
+      "id": "A",
+      "label": "口型A",
+      "group": "mouth",
+      "desc": "张嘴 A"
+    },
+    {
+      "id": "I",
+      "label": "口型I",
+      "group": "mouth",
+      "desc": "扁平 I"
+    },
+    {
+      "id": "U",
+      "label": "口型U",
+      "group": "mouth",
+      "desc": "圆唇 U"
+    },
+    {
+      "id": "E",
+      "label": "口型E",
+      "group": "mouth",
+      "desc": "半开 E"
+    },
+    {
+      "id": "O",
+      "label": "口型O",
+      "group": "mouth",
+      "desc": "圆 O"
+    },
+    {
+      "id": "point-left",
+      "label": "指向左",
+      "group": "action",
+      "desc": "手臂指向画面左侧（气泡方向）"
+    },
+    {
+      "id": "point-right",
+      "label": "指向右",
+      "group": "action",
+      "desc": "手臂指向画面右侧"
+    },
+    {
+      "id": "raise-hand",
+      "label": "举手",
+      "group": "action",
+      "desc": "单手举起（提问/抢答）"
+    },
+    {
+      "id": "heart",
+      "label": "比心",
+      "group": "action",
+      "desc": "双手比心（点赞/打赏）"
+    },
+    {
+      "id": "clap",
+      "label": "鼓掌",
+      "group": "action",
+      "desc": "双手合拢鼓掌（签到成功）"
+    },
+    {
+      "id": "celebrate",
+      "label": "庆祝",
+      "group": "action",
+      "desc": "举手/跳跃姿态（答对）"
+    },
+    {
+      "id": "shrug",
+      "label": "摊手",
+      "group": "action",
+      "desc": "双手摊开（答错/无奈）"
+    },
+    {
+      "id": "chin",
+      "label": "托腮",
+      "group": "action",
+      "desc": "思考/听讲"
+    },
+    {
+      "id": "wave",
+      "label": "挥手",
+      "group": "action",
+      "desc": "打招呼/结束"
+    },
+    {
+      "id": "left",
+      "label": "左侧身",
+      "group": "view",
+      "desc": "转身用"
+    },
+    {
+      "id": "back",
+      "label": "背身",
+      "group": "view",
+      "desc": "转身用"
+    },
+    {
+      "id": "q-neutral",
+      "label": "3/4 中性",
+      "group": "quarter",
+      "desc": "四分之三视角，气泡在侧边时更自然"
+    },
+    {
+      "id": "q-smile",
+      "label": "3/4 微笑",
+      "group": "quarter",
+      "desc": ""
+    },
+    {
+      "id": "q-point",
+      "label": "3/4 指向",
+      "group": "quarter",
+      "desc": ""
+    },
+    {
+      "id": "q-celebrate",
+      "label": "3/4 庆祝",
+      "group": "quarter",
+      "desc": ""
+    }
+  ],
+  "available": {
+    "neutral": "full-neutral.png",
+    "smile": "full-smile.png",
+    "blink": "full-blink.png",
+    "A": "full-A.png",
+    "I": "full-I.png",
+    "U": "full-U.png",
+    "E": "full-E.png",
+    "O": "full-O.png",
+    "left": "full-left.png",
+    "back": "full-back.png",
+    "celebrate": "full-celebrate.png",
+    "chin": "full-chin.png",
+    "clap": "full-clap.png",
+    "confused": "full-confused.png",
+    "heart": "full-heart.png",
+    "laugh": "full-laugh.png",
+    "point-left": "full-point-left.png",
+    "point-right": "full-point-right.png",
+    "proud": "full-proud.png",
+    "q-celebrate": "full-q-celebrate.png",
+    "q-neutral": "full-q-neutral.png",
+    "q-point": "full-q-point.png",
+    "q-smile": "full-q-smile.png",
+    "raise-hand": "full-raise-hand.png",
+    "sad": "full-sad.png",
+    "shrug": "full-shrug.png",
+    "surprise": "full-surprise.png",
+    "think": "full-think.png",
+    "wave": "full-wave.png"
+  }
+}

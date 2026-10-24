@@ -1,0 +1,19 @@
+# secrets
+.env
+*.env.local
+DEEPSEEK_CREDENTIALS_FILE
+
+# deps / caches
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+
+# media / screenshots (keep repo light)
+*.mp4
+*.mov
+*.webm
+screenshots/
+
+# tooling
+*.log

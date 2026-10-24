@@ -1,0 +1,268 @@
+{
+  "version": 2,
+  "canvas": 512,
+  "note": "所有图片：同一机位/比例/脚底线、透明底、单张≥1024px 高、无背景无阴影",
+  "slots": [
+    {
+      "id": "neutral",
+      "label": "中性",
+      "group": "base",
+      "desc": "全身正面中性 A-pose，所有帧的基准",
+      "file": "inbox/neutral.png",
+      "out": "full-neutral.png",
+      "available": true
+    },
+    {
+      "id": "smile",
+      "label": "微笑",
+      "group": "expression",
+      "desc": "嘴角上扬",
+      "file": "inbox/smile.png",
+      "out": "full-smile.png",
+      "available": true
+    },
+    {
+      "id": "laugh",
+      "label": "大笑",
+      "group": "expression",
+      "desc": "张嘴笑，可用于答对",
+      "file": "inbox/laugh.png",
+      "out": "full-laugh.png",
+      "available": true
+    },
+    {
+      "id": "blink",
+      "label": "眨眼",
+      "group": "expression",
+      "desc": "闭眼",
+      "file": "inbox/blink.png",
+      "out": "full-blink.png",
+      "available": true
+    },
+    {
+      "id": "surprise",
+      "label": "惊讶",
+      "group": "expression",
+      "desc": "睁大眼、微张嘴",
+      "file": "inbox/surprise.png",
+      "out": "full-surprise.png",
+      "available": true
+    },
+    {
+      "id": "confused",
+      "label": "疑惑",
+      "group": "expression",
+      "desc": "歪头/问号感",
+      "file": "inbox/confused.png",
+      "out": "full-confused.png",
+      "available": true
+    },
+    {
+      "id": "think",
+      "label": "思考",
+      "group": "expression",
+      "desc": "托腮/眼神向上",
+      "file": "inbox/think.png",
+      "out": "full-think.png",
+      "available": true
+    },
+    {
+      "id": "sad",
+      "label": "委屈",
+      "group": "expression",
+      "desc": "答错时可用",
+      "file": "inbox/sad.png",
+      "out": "full-sad.png",
+      "available": true
+    },
+    {
+      "id": "proud",
+      "label": "得意",
+      "group": "expression",
+      "desc": "答对/被夸",
+      "file": "inbox/proud.png",
+      "out": "full-proud.png",
+      "available": true
+    },
+    {
+      "id": "A",
+      "label": "口型A",
+      "group": "mouth",
+      "desc": "张嘴 A",
+      "file": "inbox/A.png",
+      "out": "full-A.png",
+      "available": true
+    },
+    {
+      "id": "I",
+      "label": "口型I",
+      "group": "mouth",
+      "desc": "扁平 I",
+      "file": "inbox/I.png",
+      "out": "full-I.png",
+      "available": true
+    },
+    {
+      "id": "U",
+      "label": "口型U",
+      "group": "mouth",
+      "desc": "圆唇 U",
+      "file": "inbox/U.png",
+      "out": "full-U.png",
+      "available": true
+    },
+    {
+      "id": "E",
+      "label": "口型E",
+      "group": "mouth",
+      "desc": "半开 E",
+      "file": "inbox/E.png",
+      "out": "full-E.png",
+      "available": true
+    },
+    {
+      "id": "O",
+      "label": "口型O",
+      "group": "mouth",
+      "desc": "圆 O",
+      "file": "inbox/O.png",
+      "out": "full-O.png",
+      "available": true
+    },
+    {
+      "id": "point-left",
+      "label": "指向左",
+      "group": "action",
+      "desc": "手臂指向画面左侧（气泡方向）",
+      "file": "inbox/point-left.png",
+      "out": "full-point-left.png",
+      "available": true
+    },
+    {
+      "id": "point-right",
+      "label": "指向右",
+      "group": "action",
+      "desc": "手臂指向画面右侧",
+      "file": "inbox/point-right.png",
+      "out": "full-point-right.png",
+      "available": true
+    },
+    {
+      "id": "raise-hand",
+      "label": "举手",
+      "group": "action",
+      "desc": "单手举起（提问/抢答）",
+      "file": "inbox/raise-hand.png",
+      "out": "full-raise-hand.png",
+      "available": true
+    },
+    {
+      "id": "heart",
+      "label": "比心",
+      "group": "action",
+      "desc": "双手比心（点赞/打赏）",
+      "file": "inbox/heart.png",
+      "out": "full-heart.png",
+      "available": true
+    },
+    {
+      "id": "clap",
+      "label": "鼓掌",
+      "group": "action",
+      "desc": "双手合拢鼓掌（签到成功）",
+      "file": "inbox/clap.png",
+      "out": "full-clap.png",
+      "available": true
+    },
+    {
+      "id": "celebrate",
+      "label": "庆祝",
+      "group": "action",
+      "desc": "举手/跳跃姿态（答对）",
+      "file": "inbox/celebrate.png",
+      "out": "full-celebrate.png",
+      "available": true
+    },
+    {
+      "id": "shrug",
+      "label": "摊手",
+      "group": "action",
+      "desc": "双手摊开（答错/无奈）",
+      "file": "inbox/shrug.png",
+      "out": "full-shrug.png",
+      "available": true
+    },
+    {
+      "id": "chin",
+      "label": "托腮",
+      "group": "action",
+      "desc": "思考/听讲",
+      "file": "inbox/chin.png",
+      "out": "full-chin.png",
+      "available": true
+    },
+    {
+      "id": "wave",
+      "label": "挥手",
+      "group": "action",
+      "desc": "打招呼/结束",
+      "file": "inbox/wave.png",
+      "out": "full-wave.png",
+      "available": true
+    },
+    {
+      "id": "left",
+      "label": "左侧身",
+      "group": "view",
+      "desc": "转身用",
+      "file": "inbox/left.png",
+      "out": "full-left.png",
+      "available": true
+    },
+    {
+      "id": "back",
+      "label": "背身",
+      "group": "view",
+      "desc": "转身用",
+      "file": "inbox/back.png",
+      "out": "full-back.png",
+      "available": true
+    },
+    {
+      "id": "q-neutral",
+      "label": "3/4 中性",
+      "group": "quarter",
+      "desc": "四分之三视角，气泡在侧边时更自然",
+      "file": "inbox/q-neutral.png",
+      "out": "full-q-neutral.png",
+      "available": true
+    },
+    {
+      "id": "q-smile",
+      "label": "3/4 微笑",
+      "group": "quarter",
+      "desc": "",
+      "file": "inbox/q-smile.png",
+      "out": "full-q-smile.png",
+      "available": true
+    },
+    {
+      "id": "q-point",
+      "label": "3/4 指向",
+      "group": "quarter",
+      "desc": "",
+      "file": "inbox/q-point.png",
+      "out": "full-q-point.png",
+      "available": true
+    },
+    {
+      "id": "q-celebrate",
+      "label": "3/4 庆祝",
+      "group": "quarter",
+      "desc": "",
+      "file": "inbox/q-celebrate.png",
+      "out": "full-q-celebrate.png",
+      "available": true
+    }
+  ]
+}

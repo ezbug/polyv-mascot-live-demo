@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POLYV H5 直播间 · 吉祥物虚拟宠物演示</title>
+<style>
+  :root{
+    --blue:#355BE0; --blue-d:#2440b8; --ink:#0b1220; --panel:#101a2c;
+    --line:rgba(255,255,255,.10); --text:#eaf0ff; --muted:rgba(234,240,255,.6);
+    --live:#ff3b5c; --gold:#ffd166;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--text); background:
+      radial-gradient(900px 500px at 15% 0%, #21408f 0%, transparent 60%),
+      radial-gradient(700px 500px at 90% 100%, #123a6b 0%, transparent 60%),
+      #060b14;
+    display:flex; align-items:center; justify-content:center; gap:56px;
+    padding:32px 20px; min-height:100vh;
+  }
+  .side{max-width:340px}
+  .side .kicker{font-size:12px;letter-spacing:.18em;color:#8fb0ff;text-transform:uppercase}
+  .side h1{font-size:30px;line-height:1.25;margin:14px 0 12px}
+  .side h1 span{color:#8fb0ff}
+  .side p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 14px}
+  .side ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.9}
+  .side li b{color:#cfe0ff;font-weight:600}
+  .tag{display:inline-block;margin-top:18px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted)}
+
+  /* ===== 手机外框 ===== */
+  .phone{
+    position:relative; width:390px; height:844px; flex:none; border-radius:46px; overflow:hidden;
+    background:#0b1220; border:10px solid #1a2233;
+    box-shadow:0 40px 100px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset;
+  }
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:112px;height:26px;border-radius:14px;background:#0a0f18;z-index:60}
+
+  .app{height:100%;display:flex;flex-direction:column;background:#0b1220;position:relative}
+
+  /* ===== 顶栏 ===== */
+  .topbar{display:flex;align-items:center;gap:10px;padding:44px 14px 10px}
+  .icon-btn{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);font-size:15px;flex:none;cursor:pointer}
+  .room-title{flex:1;min-width:0}
+  .room-title b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .room-title small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+  .follow{padding:6px 12px;border-radius:999px;background:var(--live);font-size:12px;font-weight:600;cursor:pointer;flex:none}
+
+  /* ===== 视频区（三分屏演示） ===== */
+  .stage-video{position:relative;margin:6px 12px;border-radius:14px;overflow:hidden;aspect-ratio:16/9;background:#0e1524;flex:none}
+  .slide{position:absolute;inset:28px 76px 10px 10px;background:#fff;border-radius:6px;padding:10px 12px;color:#12203a;overflow:hidden}
+  .slide h3{margin:0 0 6px;font-size:12px;color:var(--blue);letter-spacing:.02em}
+  .slide .bar{height:4px;border-radius:2px;background:#e8edf9;margin:5px 0}
+  .slide .bar.w70{width:70%}.slide .bar.w85{width:85%}.slide .bar.w55{width:55%}
+  .slide .mini{position:absolute;right:8px;bottom:6px;font-size:8px;color:#9aa7c2}
+  .slide .line{font-size:9px;color:#3c4a6e;margin:5px 0;display:flex;gap:5px;align-items:center}
+  .slide .line b{color:#355BE0;font-size:8px;background:#eef2ff;border-radius:3px;padding:1px 4px}
+  .slide .chart{position:absolute;right:8px;bottom:18px;display:flex;gap:3px;align-items:flex-end}
+  .slide .chart i{display:block;width:6px;background:#dbe5ff;border-radius:2px}
+  .cam{position:absolute;right:8px;top:28px;bottom:10px;width:58px;border-radius:6px;background:
+      radial-gradient(60px 40px at 50% 30%, #3a63d8, #16233f 70%);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+  .cam .person{position:absolute;left:0;right:0;bottom:0;height:100%}
+  .cam .head{position:absolute;left:50%;top:18px;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#f2f6ff,#c9d6ef)}
+  .cam .body{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:38px;height:34px;border-radius:18px 18px 4px 4px;background:linear-gradient(180deg,#dde7fb,#8fa6cf)}
+  .cam .tag{position:absolute;left:50%;transform:translateX(-50%);bottom:6px;font-size:8px;color:rgba(255,255,255,.75);z-index:2}
+  .cam .wave{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:2px}
+  .cam .wave i{display:block;width:2px;height:6px;background:#8fd0ff;border-radius:1px;animation:wave 1s infinite ease-in-out}
+  .cam .wave i:nth-child(2){animation-delay:.15s}.cam .wave i:nth-child(3){animation-delay:.3s}.cam .wave i:nth-child(4){animation-delay:.45s}
+  @keyframes wave{0%,100%{height:4px;opacity:.5}50%{height:12px;opacity:1}}
+  .live-pill{position:absolute;left:8px;top:8px;display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:rgba(255,59,92,.92);font-size:10px;font-weight:700;letter-spacing:.06em}
+  .live-pill .dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .viewers{position:absolute;right:8px;top:8px;z-index:3;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.45);font-size:10px;color:#dbe6ff}
+  .danmaku{position:absolute;left:0;bottom:8px;z-index:1;white-space:nowrap;font-size:10.5px;color:#fff;background:rgba(0,0,0,.35);padding:2px 8px;border-radius:999px;animation:fly 11s linear infinite}
+  @keyframes fly{from{transform:translateX(100%)}to{transform:translateX(-110%)}}
+
+  /* ===== tab + 聊天 ===== */
+  .tabs{display:flex;gap:22px;padding:12px 16px 8px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+  .tabs b{color:#fff;position:relative;font-weight:600}
+  .tabs b::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-9px;width:16px;height:2px;border-radius:2px;background:var(--blue)}
+  .chat{flex:1;overflow-y:auto;padding:12px 14px 6px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+  .chat::-webkit-scrollbar{display:none}
+  .msg{display:flex;gap:8px;align-items:flex-start;animation:in .3s ease}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#5b7cff,#2a3f9e);display:grid;place-items:center;font-size:10px;flex:none}
+  .bubble{max-width:78%;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.08);font-size:12.5px;line-height:1.55;word-break:break-word}
+  .bubble .name{display:block;font-size:10px;color:var(--muted);margin-bottom:2px}
+  .system{align-self:center;font-size:10.5px;color:var(--muted);background:rgba(255,255,255,.05);padding:4px 10px;border-radius:999px}
+  .msg.me{flex-direction:row-reverse}
+  .msg.me .bubble{background:rgba(53,91,224,.85)}
+  .msg.me .avatar{background:linear-gradient(135deg,#8fb0ff,#355BE0)}
+
+  /* ===== 底部输入 ===== */
+  .inputbar{display:flex;align-items:center;gap:8px;padding:10px 12px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(9,15,26,.92)}
+  .inputbar input{flex:1;min-width:0;border:none;outline:none;background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:10px 14px;font-size:12.5px}
+  .inputbar input::placeholder{color:rgba(234,240,255,.4)}
+  .send{border:none;background:var(--blue);color:#fff;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .tools{display:flex;align-items:center;gap:12px;padding:0 16px 10px;color:var(--muted);font-size:11px}
+  .tools .spacer{flex:1}
+  .tool{cursor:pointer;display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:8px}
+  .tool:active{background:rgba(255,255,255,.08)}
+  .like.heart{color:#ff6b8b}
+
+  /* ===== 宠物 ===== */
+  #pet{position:absolute;right:14px;bottom:126px;width:104px;height:104px;z-index:40;touch-action:none;cursor:grab;user-select:none;transition:filter .2s}
+  #pet:active{cursor:grabbing}
+  #pet .inner{width:100%;height:100%;animation:bob 3.2s ease-in-out infinite;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5))}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  #pet img{width:100%;height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none}
+  .affinity{position:absolute;left:50%;transform:translateX(-50%);top:-16px;white-space:nowrap;background:rgba(10,18,32,.9);border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:10px;color:#ffd1dc}
+  .affinity b{color:#ff8fab}
+  .pet-name{position:absolute;left:50%;transform:translateX(-50%);bottom:-14px;font-size:10px;color:#cfe0ff;background:rgba(53,91,224,.9);padding:1px 8px;border-radius:999px;white-space:nowrap}
+
+  /* 宠物气泡 */
+  #petBubble{position:absolute;right:120px;bottom:176px;max-width:190px;background:#fff;color:#16213a;border-radius:14px 14px 4px 14px;padding:10px 12px;font-size:12px;line-height:1.5;z-index:41;box-shadow:0 12px 30px rgba(0,0,0,.4);opacity:0;pointer-events:none;transform:translateY(6px);transition:.25s}
+  #petBubble.show{opacity:1;pointer-events:auto;transform:none}
+  #petBubble .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  #petBubble .chip{background:#eef2ff;color:#2a3f9e;border-radius:999px;padding:4px 9px;font-size:11px;cursor:pointer;white-space:nowrap}
+  #petBubble .chip:active{background:#dfe7ff}
+
+  /* ===== 聊天弹层 ===== */
+  .sheet{position:absolute;inset:0;background:rgba(4,9,18,.5);z-index:70;opacity:0;pointer-events:none;transition:.25s}
+  .sheet.open{opacity:1;pointer-events:auto}
+  .sheet .panel{position:absolute;left:0;right:0;bottom:0;height:76%;background:#0e1728;border-radius:24px 24px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .sheet.open .panel{transform:none}
+  .sheet-head{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+  .sheet-head .ava{width:38px;height:38px;border-radius:50%;object-fit:contain;background:radial-gradient(circle at 50% 40%, #24365c, #141e33);border:1px solid rgba(255,255,255,.18);flex:none}
+  .sheet-head b{font-size:14px}
+  .sheet-head small{display:block;font-size:10.5px;color:#7ef0b0;margin-top:1px}
+  .sheet-head .close{margin-left:auto;font-size:18px;color:var(--muted);cursor:pointer;padding:4px 8px}
+  .sheet-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+  .sheet-msgs .msg .bubble{font-size:13px}
+  .sheet-foot{padding:10px 14px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+  .sheet-foot input{flex:1;min-width:0;background:rgba(255,255,255,.08);border:none;outline:none;color:#fff;border-radius:999px;padding:10px 14px;font-size:12.5px}
+  .quick{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+  .quick button{flex:none;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#cfe0ff;border-radius:999px;padding:6px 10px;font-size:11.5px;cursor:pointer}
+  .quick button:active{background:rgba(53,91,224,.3)}
+
+  /* 飘心 */
+  .heart-fly{position:absolute;z-index:45;font-size:18px;pointer-events:none;animation:heart 1.4s ease-out forwards}
+  @keyframes heart{0%{opacity:1;transform:translateY(0) scale(.8)}100%{opacity:0;transform:translateY(-120px) scale(1.3)}}
+
+  /* toast */
+  #toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(10,18,32,.94);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:12.5px;z-index:90;opacity:0;pointer-events:none;transition:.2s}
+  #toast.show{opacity:1}
+
+  @media (max-width: 900px){
+    body{padding:0;gap:0;display:block;background:#060b14}
+    .side{display:none}
+    .phone{width:100%;height:100dvh;border:none;border-radius:0;box-shadow:none}
+    .notch{display:none}
+    .app{padding-top:env(safe-area-inset-top)}
+  }
+</style>
+</head>
+<body>
+  <div class="side">
+    <div class="kicker">POLYV · H5 LIVE ROOM DEMO</div>
+    <h1>吉祥物「小威」<span>虚拟宠物</span> × 直播间</h1>
+    <p>这是自建 H5 观看页的演示：直播间 UI 自己渲染，所以角色可以做到「宠物级」——可拖拽、会眨眼、会说话、会卖萌、会跟着互动做反应。</p>
+    <ul>
+      <li><b>宠物层</b>：拖拽 / 点击 / 眨眼 / 口型 / 表情 / 亲密度</li>
+      <li><b>直播层</b>：三分屏画面、LIVE 标识、弹幕、聊天、点赞、礼物</li>
+      <li><b>AI 层</b>：点开「聊聊」即可对话（生产环境接保利威 AI 答疑助手）</li>
+      <li><b>接入</b>：Polyv 观看页 SDK 提供播放/聊天/互动逻辑，宠物层完全自绘</li>
+    </ul>
+    <div class="tag">演示数据 · 非真实直播 · 手机端请直接打开</div>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="icon-btn">‹</div>
+        <div class="room-title">
+          <b>企业直播运营实战 · 公开课</b>
+          <small>POLYV 云直播 · 演示直播间</small>
+        </div>
+        <div class="follow" id="followBtn">+ 关注</div>
+      </div>
+
+      <div class="stage-video">
+        <div class="slide">
+          <h3>直播运营 · 开播前 30 分钟</h3>
+          <div class="line"><b>01</b>推流与网络检查</div>
+          <div class="line"><b>02</b>PPT 与素材准备</div>
+          <div class="line"><b>03</b>互动功能开启</div>
+          <div class="chart"><i style="height:16px"></i><i style="height:26px"></i><i style="height:20px"></i><i style="height:32px"></i></div>
+          <div class="mini">POLYV · 演示画面</div>
+        </div>
+        <div class="cam">
+          <div class="person"><i class="head"></i><i class="body"></i></div>
+          <div class="tag">讲师</div>
+          <div class="wave"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="live-pill"><span class="dot"></span>LIVE</div>
+        <div class="viewers">1,286 人在看</div>
+        <div class="danmaku">讲师讲得好清楚 👏</div>
+      </div>
+
+      <div class="tabs">
+        <b>互动</b><span>简介</span><span>商品</span>
+      </div>
+
+      <div class="chat" id="chatList">
+        <div class="system">欢迎来到直播间，文明发言 · 演示环境</div>
+        <div class="msg">
+          <div class="avatar">张</div>
+          <div class="bubble"><span class="name">张同学</span>老师，开播前要准备什么？</div>
+        </div>
+        <div class="msg">
+          <div class="avatar" style="background:linear-gradient(135deg,#ffb36b,#e26d2f)">讲</div>
+          <div class="bubble"><span class="name">讲师</span>先确认网络、推流地址和 PPT，再检查互动功能是否开启～</div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <div class="tool like heart" id="likeBtn">♥ 点赞</div>
+        <div class="tool">🎁 礼物</div>
+        <div class="tool">↗ 分享</div>
+        <div class="spacer"></div>
+        <div class="tool" id="openSheet2">💬 找小威</div>
+      </div>
+
+      <div class="inputbar">
+        <input id="inputMain" placeholder="说点什么…" maxlength="60">
+        <button class="send" id="sendMain">发送</button>
+      </div>
+
+      <div id="pet" aria-label="吉祥物小威">
+        <div class="affinity">亲密度 <b id="affinityVal">12</b> ❤</div>
+        <div class="inner"><img id="petImg" src="assets/pet-neutral.png" alt="吉祥物"></div>
+        <div class="pet-name">小威</div>
+      </div>
+
+      <div id="petBubble">
+        嗨，我是小威～<br>点我可以聊聊天，也可以把我拖到别处去。
+        <div class="chips">
+          <span class="chip" data-q="你是谁">你是谁</span>
+          <span class="chip" data-q="今天讲什么">今天讲什么</span>
+          <span class="chip" data-q="怎么报名">怎么报名</span>
+        </div>
+      </div>
+
+      <div class="sheet" id="sheet">
+        <div class="panel">
+          <div class="sheet-head">
+            <img class="ava" id="sheetPet" src="assets/pet-smile.png" alt="小威">
+            <div><b>小威 · 直播助手</b><small>在线 · 随时回答</small></div>
+            <div class="close" id="closeSheet">✕</div>
+          </div>
+          <div class="sheet-msgs" id="sheetMsgs">
+            <div class="msg">
+              <div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div>
+              <div class="bubble"><span class="name">小威</span>我在呢～今天讲「开播前 30 分钟」，有想问的直接说。</div>
+            </div>
+          </div>
+          <div class="quick">
+            <button data-q="吉祥物是谁">吉祥物是谁</button>
+            <button data-q="今天讲什么">今天讲什么</button>
+            <button data-q="怎么报名">怎么报名</button>
+            <button data-q="能回放吗">能回放吗</button>
+          </div>
+          <div class="sheet-foot">
+            <input id="inputSheet" placeholder="问小威一个问题…" maxlength="60">
+            <button class="send" id="sendSheet">发送</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast"></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const frames = {
+    neutral: 'assets/pet-neutral.png',
+    smile: 'assets/pet-smile.png',
+    blink: 'assets/pet-blink.png',
+    A: 'assets/pet-A.png', I: 'assets/pet-I.png', U: 'assets/pet-U.png',
+    E: 'assets/pet-E.png', O: 'assets/pet-O.png'
+  };
+  const petImg = $('#petImg');
+  const sheetPet = $('#sheetPet');
+  const affinityVal = $('#affinityVal');
+  let affinity = 12;
+  let mode = 'idle';           // idle | smile | blink | talk
+  let blinkTimer = null, talkTimer = null, smileTimer = null;
+  let dragState = null, moved = false;
+
+  const setFrame = (n) => { if (!petImg.src.endsWith(frames[n].replace('assets/',''))) petImg.src = frames[n]; if (sheetPet) sheetPet.src = frames[n]; };
+
+  /* ---------- 表情调度 ---------- */
+  function scheduleBlink() {
+    clearTimeout(blinkTimer);
+    blinkTimer = setTimeout(() => {
+      if (mode === 'idle') { mode = 'blink'; setFrame('blink'); setTimeout(() => { mode = 'idle'; setFrame('neutral'); }, 150); }
+      scheduleBlink();
+    }, 2600 + Math.random() * 3200);
+  }
+  function smileFor(ms = 1200) {
+    if (mode === 'talk') return;
+    mode = 'smile'; setFrame('smile');
+    clearTimeout(smileTimer);
+    smileTimer = setTimeout(() => { if (mode === 'smile') { mode = 'idle'; setFrame('neutral'); } }, ms);
+  }
+  function startTalk() {
+    stopTalk();
+    mode = 'talk';
+    const seq = ['A', 'I', 'U', 'E', 'O'];
+    let i = 0;
+    talkTimer = setInterval(() => { setFrame(seq[i % seq.length]); i++; }, 110);
+  }
+  function stopTalk() {
+    if (talkTimer) { clearInterval(talkTimer); talkTimer = null; }
+    if (mode === 'talk') { mode = 'idle'; setFrame('neutral'); }
+  }
+
+  /* ---------- 亲密度 ---------- */
+  function addAffinity(n) {
+    affinity += n;
+    affinityVal.textContent = affinity;
+    if (affinity === 20) toast('小威和你更亲近了 ❤');
+    if (affinity === 30) { toast('亲密度 30：小威学会了新表情！'); smileFor(1600); }
+  }
+
+  /* ---------- 消息渲染 ---------- */
+  const chatList = $('#chatList');
+  function addChat(name, text, me = false) {
+    const el = document.createElement('div');
+    el.className = 'msg' + (me ? ' me' : '');
+    el.innerHTML = me
+      ? `<div class="avatar">我</div><div class="bubble">${escapeHtml(text)}</div>`
+      : `<div class="avatar">${escapeHtml(name[0])}</div><div class="bubble"><span class="name">${escapeHtml(name)}</span>${escapeHtml(text)}</div>`;
+    chatList.appendChild(el);
+    chatList.scrollTop = chatList.scrollHeight;
+  }
+  function addSystem(text) {
+    const el = document.createElement('div');
+    el.className = 'system'; el.textContent = text;
+    chatList.appendChild(el); chatList.scrollTop = chatList.scrollHeight;
+  }
+  const sheetMsgs = $('#sheetMsgs');
+  function addSheet(role, text) {
+    const el = document.createElement('div');
+    el.className = 'msg' + (role === 'me' ? ' me' : '');
+    const ava = role === 'me'
+      ? `<div class="avatar" style="background:linear-gradient(135deg,#8fb0ff,#355BE0)">我</div>`
+      : `<div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div>`;
+    el.innerHTML = role === 'me'
+      ? `${ava}<div class="bubble">${escapeHtml(text)}</div>`
+      : `${ava}<div class="bubble"><span class="name">小威</span>${escapeHtml(text)}</div>`;
+    sheetMsgs.appendChild(el);
+    sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+  }
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* ---------- AI 回复（演示：本地规则；生产接 AI 答疑助手） ---------- */
+  const replies = [
+    { k: /你好|hi|hello/i, r: '你好呀！我是小威，保利威的虚拟形象，直播有什么问题都可以问我～' },
+    { k: /吉祥物|你是谁|小威/, r: '我是保利威娘，不过大家叫我小威。蓝白猫耳、O 播放器发饰、还戴着耳麦，随时在线陪你看直播。' },
+    { k: /讲什么|内容|课程/, r: '今天讲「开播前 30 分钟」：推流设置、PPT 准备、互动功能检查，还有常见问题排查。' },
+    { k: /报名|参加|预约/, r: '点右上角的「关注」就能预约下一场；已经开始的场次，结束后可在回放里看。' },
+    { k: /回放|重看/, r: '有的，直播结束会自动生成回放，在「回放」里能看，还支持 AI 大纲和逐字稿。' },
+    { k: /点赞|喜欢|可爱/, r: '嘿嘿，谢谢！再点两下，我们的亲密度还能涨～' },
+    { k: /价格|费用|多少钱/, r: '具体报价要商务同学来定，我先把你的问题转给助教，稍后回复你。' },
+    { k: /AI|助手|数字人/, r: '我就是用 AI 答疑助手 SDK 接进来的，生产环境里能按企业知识库回答问题。' }
+  ];
+  const fallbacks = [
+    '这个问题我记下来啦，等讲师讲完我帮你追问～',
+    '我还在学习中，你可以换个问法，或者点下面的快捷问题试试。',
+    '好问题！我先把重点记到小本本上，直播结束后整理给你。'
+  ];
+  const pickReply = (q) => {
+    for (const item of replies) if (item.k.test(q)) return item.r;
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  };
+
+  let typing = false;
+  function askPet(question, target = 'sheet') {
+    if (typing) return;
+    typing = true;
+    addSheet('me', question);
+    addAffinity(1);
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'msg';
+      el.innerHTML = `<div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div><div class="bubble"><span class="name">小威</span><span class="typing">正在输入…</span></div>`;
+      sheetMsgs.appendChild(el); sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+      startTalk();
+      const answer = pickReply(question);
+      let i = 0;
+      const textEl = el.querySelector('.typing');
+      const t = setInterval(() => {
+        i += 1;
+        textEl.textContent = answer.slice(0, i);
+        sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+        if (i >= answer.length) {
+          clearInterval(t);
+          stopTalk(); smileFor(1600); typing = false;
+        }
+      }, 45);
+    }, 500);
+  }
+
+  /* ---------- 气泡 ---------- */
+  const bubble = $('#petBubble');
+  const tips = ['点我看看～', '今天讲开播前 30 分钟哦', '喜欢就点个赞吧', '可以把我拖到任意位置'];
+  let tipTimer = null, tipIndex = 0;
+  function showBubble(ms = 5000) {
+    bubble.classList.add('show');
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => bubble.classList.remove('show'), ms);
+  }
+  function cycleTips() {
+    if (!bubble.classList.contains('show')) return;
+    const span = bubble.childNodes[0];
+    tipIndex = (tipIndex + 1) % tips.length;
+    if (span && span.nodeType === 3) span.textContent = tips[tipIndex] + ' ';
+  }
+
+  /* ---------- 拖拽 + 点击 ---------- */
+  const pet = $('#pet');
+  const phone = document.querySelector('.phone');
+  pet.addEventListener('pointerdown', (e) => {
+    dragState = { x: e.clientX, y: e.clientY, left: pet.offsetLeft, top: pet.offsetTop };
+    moved = false;
+    pet.setPointerCapture(e.pointerId);
+  });
+  pet.addEventListener('pointermove', (e) => {
+    if (!dragState) return;
+    const dx = e.clientX - dragState.x, dy = e.clientY - dragState.y;
+    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+    if (!moved) return;
+    const rect = phone.getBoundingClientRect();
+    let left = dragState.left + dx, top = dragState.top + dy;
+    left = Math.max(4, Math.min(rect.width - pet.offsetWidth - 4, left));
+    top = Math.max(70, Math.min(rect.height - pet.offsetHeight - 70, top));
+    pet.style.left = left + 'px';
+    pet.style.top = top + 'px';
+    pet.style.right = 'auto';
+    pet.style.bottom = 'auto';
+  });
+  pet.addEventListener('pointerup', () => {
+    const wasDrag = moved;
+    dragState = null;
+    if (!wasDrag) {
+      showBubble(6000);
+      if (bubble.classList.contains('show') && Math.random() > 0.5) cycleTips();
+      smileFor(900);
+      addAffinity(0);
+    }
+  });
+
+  /* ---------- 点赞 ---------- */
+  const likeBtn = $('#likeBtn');
+  likeBtn.addEventListener('click', () => {
+    for (let i = 0; i < 4; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart-fly'; h.textContent = '❤';
+      h.style.left = (300 + Math.random() * 50) + 'px';
+      h.style.top = (680 + Math.random() * 40) + 'px';
+      h.style.animationDelay = (i * 0.08) + 's';
+      phone.appendChild(h);
+      setTimeout(() => h.remove(), 1600);
+    }
+    smileFor(1200); addAffinity(1);
+    // 自己点赞同步到聊天区
+    addChat('我', '♥ 点赞了直播间', true);
+  });
+
+  /* ---------- 主聊天输入 ---------- */
+  const inputMain = $('#inputMain');
+  $('#sendMain').addEventListener('click', () => {
+    const v = inputMain.value.trim();
+    if (!v) return;
+    inputMain.value = '';
+    addChat('我', v, true);
+    smileFor(800);
+    setTimeout(() => {
+      addChat('小威', pickReply(v));
+      startTalk(); setTimeout(stopTalk, 900);
+      addAffinity(1);
+    }, 700);
+  });
+  inputMain.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#sendMain').click(); });
+
+  /* ---------- 聊天弹层 ---------- */
+  const sheet = $('#sheet');
+  const openSheet = () => { sheet.classList.add('open'); bubble.classList.remove('show'); };
+  $('#closeSheet').addEventListener('click', () => sheet.classList.remove('open'));
+  $('#openSheet2').addEventListener('click', openSheet);
+  const inputSheet = $('#inputSheet');
+  $('#sendSheet').addEventListener('click', () => {
+    const v = inputSheet.value.trim(); if (!v) return;
+    inputSheet.value = ''; askPet(v);
+  });
+  inputSheet.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#sendSheet').click(); });
+  document.querySelectorAll('#petBubble .chip').forEach(c => c.addEventListener('click', () => {
+    openSheet(); setTimeout(() => askPet(c.dataset.q), 260);
+  }));
+  document.querySelectorAll('.quick button').forEach(b => b.addEventListener('click', () => askPet(b.dataset.q)));
+
+  /* ---------- 关注 / toast ---------- */
+  const followBtn = $('#followBtn');
+  followBtn.addEventListener('click', () => {
+    followBtn.textContent = '已关注'; followBtn.style.background = 'rgba(255,255,255,.15)';
+    toast('已预约下一场直播');
+    addAffinity(1);
+  });
+  let toastTimer;
+  function toast(text) {
+    const el = $('#toast'); el.textContent = text; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  /* ---------- 模拟直播间滚动消息 ---------- */
+  const names = ['李工', '王同学', 'Cathy', '小周', 'Kevin', '赵老师'];
+  const lines = ['讲得很清楚 👍', '请问 PPT 模板在哪下载？', '已经关注了', '回放能看吗', '这个功能我们也在用'];
+  setInterval(() => {
+    if (Math.random() < 0.65) {
+      addChat(names[Math.floor(Math.random() * names.length)], lines[Math.floor(Math.random() * lines.length)]);
+    }
+  }, 9000);
+
+  /* ---------- 启动 ---------- */
+  scheduleBlink();
+  setTimeout(() => showBubble(6000), 1200);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>素材看板 · 小威动作</title>
+<style>
+  :root{--blue:#355BE0;--line:rgba(255,255,255,.1);--muted:rgba(235,241,255,.55)}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(900px 500px at 20% 0%,#1b2f63 0%,transparent 60%),#070d18;color:#eaf0ff;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:28px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .stat{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13px}
+  .stat b{font-size:18px;color:#9db6ff}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .filter{border:1px solid var(--line);background:transparent;color:#cfe0ff;border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer}
+  .filter.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  .card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .thumb{height:170px;border-radius:10px;background:radial-gradient(circle at 50% 45%,#1c2b4d,#0d1424);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{height:100%;object-fit:contain}
+  .thumb .missing{color:#5f6f92;font-size:12px}
+  .meta{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .id{font-size:12px;color:#cfe0ff;font-family:ui-monospace,monospace}
+  .badge{font-size:10px;border-radius:999px;padding:2px 7px;flex:none}
+  .badge.ok{background:rgba(62,207,142,.16);color:#6fe3ae;border:1px solid rgba(62,207,142,.3)}
+  .badge.no{background:rgba(255,255,255,.06);color:#8b9ab8;border:1px solid var(--line)}
+  .label{font-size:11.5px;color:var(--muted)}
+  .usage{font-size:10.5px;color:#7f8fb0}
+  .toast{position:fixed;inset:auto 24px 24px auto;background:#101c33;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;opacity:0;transition:.2s}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+  <h1>小威 · 动作素材看板</h1>
+  <div class="sub">数据来源：<code>assets/slots.json</code>（由 build-frames.py 生成） · 生成新图后跑 build-frames.py 刷新</div>
+  <div class="stats" id="stats"></div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+const USAGE = {
+  'point-left':'答题卡弹出','celebrate':'答对','shrug':'答错','raise-hand':'观众提问','clap':'签到成功','heart':'点赞/打赏',
+  'blink':'待机','A':'说话口型','I':'说话口型','U':'说话口型','E':'说话口型','O':'说话口型',
+  'laugh':'大笑/答对(备选)','surprise':'抽奖/惊讶','confused':'答错(备选)','think':'AI 思考中','sad':'委屈','proud':'被夸/得意',
+  'point-right':'指向右侧','chin':'听讲/托腮','wave':'打招呼/结束','left':'转身','back':'转身',
+  'q-neutral':'3/4 视角','q-smile':'3/4 视角','q-point':'3/4 视角','q-celebrate':'3/4 视角'
+};
+const GROUP_CN = {base:'基础',expression:'表情',mouth:'口型',action:'动作',view:'转身',quarter:'3/4 视角'};
+const $ = s => document.querySelector(s);
+
+async function boot(){
+  const data = await fetch('assets/slots.json').then(r=>r.json()).catch(()=>null);
+  if (!data) { document.body.innerHTML = '<p style="color:#f88">读取 assets/slots.json 失败，请先运行 build-frames.py</p>'; return; }
+  const available = data.available || {};
+  const slots = data.slots;
+  const groups = [...new Set(slots.map(s=>s.group))];
+
+  $('#stats').innerHTML = `
+    <div class="stat">已就绪 <b>${slots.filter(s=>available[s.id]).length}</b> / ${slots.length}</div>
+    <div class="stat">缺图 <b>${slots.filter(s=>!available[s.id]).length}</b></div>
+    <div class="stat">已用于事件 <b>${Object.keys(USAGE).filter(k=>available[k]).length}</b></div>`;
+  $('#filters').innerHTML = `<button class="filter on" data-g="all">全部</button>` +
+    groups.map(g=>`<button class="filter" data-g="${g}">${GROUP_CN[g]||g}</button>`).join('');
+
+  const render = (g='all') => {
+    const list = slots.filter(s=>g==='all'||s.group===g);
+    $('#grid').innerHTML = list.map(s=>{
+      const ok = !!available[s.id];
+      return `<div class="card">
+        <div class="thumb">${ok?`<img src="assets/${available[s.id]}" alt="${s.id}">`:`<span class="missing">待生成</span>`}</div>
+        <div class="meta"><span class="id">${s.id}</span><span class="badge ${ok?'ok':'no'}">${ok?'已就绪':'缺图'}</span></div>
+        <div class="label">${s.label} · ${s.desc||''}</div>
+        <div class="usage">用于：${USAGE[s.id]||'—'}</div>
+      </div>`;
+    }).join('');
+  };
+  render();
+  $('#filters').addEventListener('click', e=>{
+    const b = e.target.closest('.filter'); if(!b) return;
+    [...document.querySelectorAll('.filter')].forEach(x=>x.classList.toggle('on', x===b));
+    render(b.dataset.g);
+  });
+  $('#grid').addEventListener('click', e=>{
+    const img = e.target.closest('.card')?.querySelector('img');
+    if(!img) return;
+    $('#toast').textContent = img.alt + ' · ' + img.getAttribute('src');
+    $('#toast').classList.add('show'); setTimeout(()=>$('#toast').classList.remove('show'), 1600);
+  });
+}
+boot();
+</script>
+</body>
+</html>

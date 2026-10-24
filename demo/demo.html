@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POLYV H5 直播间 · 吉祥物小威（示范）</title>
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body>
+  <div class="side">
+    <div class="kicker">POLYV · H5 LIVE ROOM · DEMO</div>
+    <h1>H5 直播间 <span>×</span> 吉祥物</h1>
+    <p>这一版接的是<b>保利威观看页 SDK</b>：播放、聊天、点赞都来自公开观看的示例频道，宠物层仍然完全自绘。</p>
+    <ul>
+      <li><b>真实播放</b>：watchCore.player 渲染频道回放画面</li>
+      <li><b>真实聊天</b>：watchCore.chat 收发消息、点赞计数</li>
+      <li><b>宠物层</b>：全身像 · 拖拽 / 眨眼 / 口型 / 表情 / 双击转身 / 亲密度</li>
+      <li><b>AI</b>：保利威 AI 答疑助手（真实知识库，流式回答）</li>
+    </ul>
+    <div class="tag">示例频道 · 公开观看演示</div>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="icon-btn">‹</div>
+        <div class="room-title">
+          <b id="roomTitle">示例企业培训直播</b>
+          <small>POLYV 云直播 · 示例频道</small>
+        </div>
+        <div class="icon-btn" id="soundBtn" title="音效开关">🔊</div>
+        <div class="follow" id="followBtn">+ 关注</div>
+      </div>
+
+      <div class="stage-video">
+        <div id="player" class="player-box"></div>
+        <div class="live-pill" id="livePill"><span class="dot"></span>回放中</div>
+        <div class="viewers" id="viewers">-- 次观看</div>
+        <div class="play-hint hidden" id="playHint"><span>▶</span></div>
+        <div class="status-note" id="statusNote">正在连接保利威观看页 SDK…</div>
+      </div>
+
+      <div class="tabs">
+        <b>互动</b><span>简介</span><span>商品</span>
+      </div>
+
+      <div class="chat" id="chatList"></div>
+
+      <div class="tools">
+        <div class="tool like heart" id="likeBtn">♥ 点赞 <span id="likeCount"></span></div>
+        <div class="tool" id="giftBtn">🎁 礼物</div>
+        <div class="tool">↗ 分享</div>
+        <div class="spacer"></div>
+        <div class="tool" id="demoRun">▶ 演示</div>
+        <div class="tool" id="openSheet2">💬 找小威</div>
+      </div>
+
+      <div class="inputbar">
+        <input id="inputMain" placeholder="说点什么…" maxlength="60">
+        <button class="send" id="sendMain">发送</button>
+      </div>
+
+      <div id="pet" aria-label="吉祥物小威">
+        <div class="affinity">亲密度 <b id="affinityVal">12</b> ❤</div>
+        <div class="inner"><img id="petImg" src="assets/full-neutral.png?v=2" alt="吉祥物"></div>
+        <div class="pet-name">小威</div>
+      </div>
+
+      <div id="eventBubble">
+        <div class="eb-head"><span class="eb-badge" id="ebBadge">答题卡</span><span class="eb-close" id="ebClose">✕</span></div>
+        <div class="eb-title" id="ebTitle"></div>
+        <div class="eb-say" id="ebSay"></div>
+        <div class="eb-opts" id="ebOpts"></div>
+        <div class="eb-result" id="ebResult"></div>
+      </div>
+
+      <div id="petSpeech"></div>
+
+      <div id="petBubble">
+        嗨，我是小威～<br>现在有全身形象啦：点我聊天，双击我转身。
+        <div class="chips">
+          <span class="chip" data-q="你是谁">你是谁</span>
+          <span class="chip" data-q="今天讲什么">今天讲什么</span>
+          <span class="chip" data-q="怎么报名">怎么报名</span>
+        </div>
+      </div>
+
+      <div class="sheet" id="sheet">
+        <div class="panel">
+          <div class="sheet-head">
+            <img class="ava" id="sheetPet" src="assets/pet-smile.png" alt="小威">
+            <div><b>小威 · 直播助手</b><small>保利威 AI 答疑助手 · 知识库</small></div>
+            <div class="close" id="closeSheet">✕</div>
+          </div>
+          <div class="sheet-msgs" id="sheetMsgs">
+            <div class="msg">
+              <div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div>
+              <div class="bubble"><span class="name">小威</span>我在呢～我是保利威 AI 答疑助手，有想问的直接说。</div>
+            </div>
+          </div>
+          <div class="quick">
+            <button data-q="吉祥物是谁">吉祥物是谁</button>
+            <button data-q="今天讲什么">今天讲什么</button>
+            <button data-q="怎么报名">怎么报名</button>
+            <button data-q="能回放吗">能回放吗</button>
+          </div>
+          <div class="sheet-foot">
+            <input id="inputSheet" placeholder="问小威一个问题…" maxlength="60">
+            <button class="send" id="sendSheet">发送</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast"></div>
+    </div>
+  </div>
+
+<script src="https://websdk.videocc.net/live-watch-sdk/latest/lib/polyv-live-watch-sdk.umd.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const SDK = window.PolyvLiveWatchSDK;
+  const CHANNEL_ID = new URLSearchParams(location.search).get('channel') || '';
+  let core = null;
+  let realReady = false;
+
+  /* ---------------- 宠物 ---------------- */
+  const frames = { neutral:'assets/full-neutral.png', smile:'assets/full-smile.png', blink:'assets/full-blink.png', A:'assets/full-A.png', I:'assets/full-I.png', U:'assets/full-U.png', E:'assets/full-E.png', O:'assets/full-O.png', left:'assets/full-left.png', back:'assets/full-back.png' };
+  const headFrames = { neutral:'assets/pet-neutral.png', smile:'assets/pet-smile.png', blink:'assets/pet-blink.png', A:'assets/pet-A.png', I:'assets/pet-I.png', U:'assets/pet-U.png', E:'assets/pet-E.png', O:'assets/pet-O.png' };
+  // 动作帧清单：投图后 build-frames.py 会生成 full-manifest.json
+  fetch('assets/full-manifest.json').then(r => r.json()).then(m => {
+    Object.entries(m.available || {}).forEach(([id, file]) => { frames[id] = 'assets/' + file; });
+  }).catch(() => {});
+  const petImg = $('#petImg');
+  const sheetPet = $('#sheetPet');
+  let mode = 'idle', blinkTimer = null, talkTimer = null, smileTimer = null;
+  const ASSET_V = '?v=2';
+  const withV = u => u && u.indexOf('?') < 0 ? u + ASSET_V : u;
+  const setFrame = n => {
+    if (frames[n]) petImg.src = withV(frames[n]);
+    if (sheetPet && headFrames[n]) sheetPet.src = withV(headFrames[n]);
+  };
+  function scheduleBlink(){ clearTimeout(blinkTimer); blinkTimer = setTimeout(() => { if (mode==='idle'){ mode='blink'; setFrame('blink'); setTimeout(()=>{ mode='idle'; setFrame('neutral'); },150); } scheduleBlink(); }, 2600+Math.random()*3200); }
+  function smileFor(ms=1200){ if (mode==='talk') return; mode='smile'; setFrame('smile'); clearTimeout(smileTimer); smileTimer=setTimeout(()=>{ if(mode==='smile'){mode='idle';setFrame('neutral');} },ms); }
+  function startTalk(){ stopTalk(); mode='talk'; const seq=['A','I','U','E','O']; let i=0; talkTimer=setInterval(()=>{ setFrame(seq[i%5]); i++; },110); }
+  function stopTalk(){ if(talkTimer){clearInterval(talkTimer);talkTimer=null;} if(mode==='talk'){mode='idle';setFrame('neutral');} }
+  let actionTimer = null;
+  function action(name, ms = 1000) {
+    const el = document.getElementById('pet');
+    if (!el) return;
+    el.classList.remove('spin', 'bow', 'dance');
+    void el.offsetWidth; // 重置动画
+    el.classList.add(name);
+    clearTimeout(actionTimer);
+    actionTimer = setTimeout(() => el.classList.remove(name), ms);
+  }
+  let poseTimer = null;
+  function celebratePose(ms = 1800) {
+    const name = (frames['q-celebrate'] && Math.random() < 0.5) ? 'q-celebrate' : 'celebrate';
+    pose(name, ms);
+  }
+  function pose(name, ms = 1500) {
+    if (!frames[name]) {
+      // 没有该动作帧：用跳一下/微笑兜底
+      if (name === 'celebrate' || name === 'raise-hand' || name === 'point-left') {
+        pet.classList.add('jump'); setTimeout(() => pet.classList.remove('jump'), 560);
+      }
+      smileFor(ms);
+      return;
+    }
+    if (mode === 'talk') return;
+    mode = 'pose';
+    setFrame(name);
+    clearTimeout(poseTimer);
+    poseTimer = setTimeout(() => { if (mode === 'pose') { mode = 'idle'; setFrame('neutral'); } }, ms);
+  }
+  let affinity = 12;
+  function addAffinity(n){ affinity += n; $('#affinityVal').textContent = affinity; if (affinity===20) toast('小威和你更亲近了 ❤'); }
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* ---------------- 表情/动作连招 + 台词 ---------------- */
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  let speechTimer = null;
+  function petSay(text, ms = 2200) {
+    const el = document.getElementById('petSpeech');
+    if (!el || sheet.classList.contains('open')) return;
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(speechTimer);
+    speechTimer = setTimeout(() => el.classList.remove('show'), ms);
+  }
+  function setTone(t) {
+    eb.classList.remove('tone-quiz', 'tone-checkin', 'tone-lottery', 'tone-question', 'tone-notice');
+    if (t) eb.classList.add(t);
+  }
+  function ebSpeech(text) {
+    const el = document.getElementById('ebSay');
+    if (el) el.innerHTML = text ? '<b>小威：</b>' + escapeHtml(text) : '';
+  }
+  /* ---------------- 音效（WebAudio 合成，无需素材） ---------------- */
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+  document.addEventListener('pointerdown', ensureAudio, { once: true });
+  function note(freq, dur, when = 0, type = 'sine', gain = 0.07) {
+    if (!audioCtx || !soundOn) return;
+    const t = audioCtx.currentTime + when;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function sfx(name) {
+    if (!soundOn) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const P = {
+      pop:      [[880, .08, 0, 'triangle', .05], [1320, .06, .05, 'triangle', .04]],
+      like:     [[880, .12, 0], [1320, .16, .06]],
+      gift:     [[523, .12, 0], [659, .12, .07], [784, .18, .14]],
+      follow:   [[784, .14, 0], [1046, .2, .08]],
+      correct:  [[659, .1, 0], [880, .1, .09], [1046, .22, .18]],
+      wrong:    [[330, .16, 0, 'sawtooth', .05], [247, .24, .12, 'sawtooth', .05]],
+      checkin:  [[880, .12, 0], [1174, .3, .1]],
+      lottery:  [[523, .1, 0], [659, .1, .07], [784, .1, .14], [1046, .26, .21]],
+      question: [[740, .12, 0], [988, .18, .08]],
+      notice:   [[988, .2, 0]],
+      msg:      [[1200, .04, 0, 'sine', .025]],
+    };
+    (P[name] || P.pop).forEach(n => note(n[0], n[1], n[2], n[3] || 'sine', n[4] || .07));
+  }
+  const soundBtn = document.getElementById('soundBtn');
+  if (soundBtn) soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? '🔊' : '🔇';
+    toast(soundOn ? '音效已开启' : '音效已关闭');
+    if (soundOn) sfx('pop');
+  });
+  async function react(seq, each = 1300) {
+    for (const name of seq) {
+      if (!name) continue;
+      if (name === 'spin' || name === 'dance' || name === 'bow') action(name, each);
+      else pose(name, each);
+      await sleep(each);
+    }
+  }
+
+
+  /* ---------------- 聊天渲染 ---------------- */
+  const chatList = $('#chatList');
+  function addChat(name, text, me=false, cls=''){
+    const el = document.createElement('div');
+    el.className = 'msg' + (me?' me':'') + (cls?' '+cls:'');
+    el.innerHTML = me
+      ? `<div class="avatar">我</div><div class="bubble">${escapeHtml(text)}</div>`
+      : `<div class="avatar">${escapeHtml(String(name||'观')[0])}</div><div class="bubble"><span class="name">${escapeHtml(name||'观众')}</span>${escapeHtml(text)}</div>`;
+    chatList.appendChild(el); chatList.scrollTop = chatList.scrollHeight;
+  }
+  function addSystem(text){ const el=document.createElement('div'); el.className='system'; el.textContent=text; chatList.appendChild(el); chatList.scrollTop=chatList.scrollHeight; }
+  function addDanmaku(text){
+    const stage = document.querySelector('.stage-video');
+    if (!stage || !text || document.querySelectorAll('.danmaku').length > 1) return;
+    const el = document.createElement('div'); el.className='danmaku'; el.textContent=text; stage.appendChild(el);
+    setTimeout(()=>el.remove(), 11000);
+  }
+
+  /* ---------------- 真实 SDK 接入 ---------------- */
+  async function boot(){
+    if (!CHANNEL_ID){ note('未配置频道：在地址后加 ?channel=你的频道号 打开'); return; }
+    if (!SDK || !SDK.createWatchCore){ fallback('观看页 SDK 未加载'); return; }
+    note('初始化观看页 SDK…');
+    try {
+      core = SDK.createWatchCore({ channelId: CHANNEL_ID });
+      await core.setup();
+      if (!core.auth.isAuthorized()){
+        const r = await core.auth.verifyNoneAuth();
+        note('观看条件授权：' + (r.success ? '公开观看通过' : '失败'));
+        if (!r.success) throw new Error('观看条件未通过（' + r.authType + '）');
+        await core.setup();
+      }
+      await core.connect();
+      realReady = true;
+      setupInteractions();
+      applyChannelInfo(core.channel.getChannelInfo());
+      setupPlayer();
+      bindChat();
+      addSystem('已接入保利威观看页 SDK · 频道 ' + CHANNEL_ID);
+    } catch (e){
+      console.error(e);
+      fallback(String(e && e.message ? e.message : e));
+    }
+  }
+  function note(text){ $('#statusNote').textContent = text; }
+  function fallback(reason){
+    note('SDK 未连通：' + reason + '（已切换演示数据）');
+    addSystem('演示模式：SDK 未连通');
+    addChat('张同学','老师，开播前要准备什么？');
+    addChat('讲师','先确认网络、推流地址和 PPT，再检查互动功能～');
+    // 用模拟消息兜底
+    setTimeout(()=>addChat('李工','讲得很清楚 👍'), 4000);
+  }
+  function applyChannelInfo(info){
+    if (!info) return;
+    const isLive = info.liveStatus === 'live';
+    const pill = $('#livePill');
+    pill.classList.toggle('is-playback', !isLive);
+    pill.innerHTML = isLive ? '<span class="dot"></span>LIVE' : '回放中';
+    if (info.pageViewCount != null) $('#viewers').textContent = info.pageViewCount + ' 次观看';
+    note((isLive ? '直播中' : '回放中') + ' · 企业培训直播');
+  }
+
+  function setupPlayer(){
+    if (!core || !core.player) return;
+    core.player.eventEmitter.on(SDK.PlayerEvents.PlayerInited, () => {
+      const info = core.player.getPlayerInfo();
+      updatePlayState(info);
+    });
+    core.player.setupPlayer({ container: document.getElementById('player'), autoplay: true }).catch(e => {
+      console.error(e); note('播放器初始化失败：' + e.message);
+    });
+    setInterval(() => {
+      try { updatePlayState(core.player.getPlayerInfo()); } catch(e) {}
+    }, 1200);
+  }
+  function updatePlayState(info){
+    if (!info) return;
+    const paused = info.playStatus !== 'playing';
+    $('#playHint').classList.toggle('hidden', !paused);
+  }
+  $('#playHint').addEventListener('click', () => {
+    try { core.player.play(); $('#playHint').classList.add('hidden'); } catch(e){}
+  });
+
+  function renderChatMsg(chatMsg){
+    if (!chatMsg) return;
+    if (chatMsg.msgSource === 'speak'){
+      addChat(chatMsg.user && chatMsg.user.nick, chatMsg.content, !!chatMsg.isLocal);
+      addDanmaku(chatMsg.content);
+      if (!chatMsg.isLocal && /哈哈|好笑|可爱|厉害|真棒/.test(chatMsg.content || '')) pose('laugh', 1500);
+      else if (Math.random() > 0.7) smileFor(600);
+    } else if (chatMsg.msgSource === 'reward'){
+      addSystem((chatMsg.user && chatMsg.user.nick || '观众') + ' 打赏了礼物');
+    } else if (chatMsg.msgSource === 'system'){
+      addSystem(chatMsg.content || '系统消息');
+    }
+  }
+  function bindChat(){
+    core.chat.eventEmitter.on(SDK.ChatEvents.ChatMessage, ({ chatMsg }) => renderChatMsg(chatMsg));
+    core.chat.getChatHistory({ start: 0, end: 19 }).then(list => {
+      (list || []).forEach(renderChatMsg);
+      if (!list || !list.length) addSystem('聊天室暂无历史消息，发一条试试');
+    }).catch(() => {});
+    core.chat.eventEmitter.on(SDK.ChatEvents.ChatLikeCountChange, d => {
+      if (d && d.realtimeLikes != null) $('#likeCount').textContent = '· ' + d.realtimeLikes;
+    });
+    core.chat.eventEmitter.on(SDK.ChatEvents.ChatLike, d => {
+      if (d && d.isSelf) smileFor(800);
+    });
+  }
+
+  /* ---------------- 发送 / 点赞 ---------------- */
+  const inputMain = $('#inputMain');
+  $('#sendMain').addEventListener('click', async () => {
+    const v = inputMain.value.trim(); if (!v) return;
+    inputMain.value = '';
+    if (realReady){
+      try { await core.chat.sendSpeakMsg({ content: v }); }
+      catch(e){ toast('发送失败，请重试'); addChat('我', v, true); }
+    } else {
+      addChat('我', v, true);
+      setTimeout(()=>{ addChat('小威', pickReply(v)); startTalk(); setTimeout(stopTalk,900); }, 700);
+    }
+    smileFor(700);
+  });
+  inputMain.addEventListener('keydown', e => { if (e.key === 'Enter') $('#sendMain').click(); });
+
+  let likeQueue = 0, likeTimer = null;
+  $('#likeBtn').addEventListener('click', () => {
+    sfx('like');
+    for (let i=0;i<4;i++){
+      const h=document.createElement('div'); h.className='heart-fly'; h.textContent='❤';
+      h.style.left=(260+Math.random()*60)+'px'; h.style.top=(680+Math.random()*40)+'px';
+      h.style.animationDelay=(i*.08)+'s'; document.querySelector('.phone').appendChild(h);
+      setTimeout(()=>h.remove(),1600);
+    }
+    petSay(pick(['谢谢你的小心心！','收到爱心，比心～','嘿嘿，再点几下嘛']));
+    react(pick([['heart','laugh'], ['heart','smile'], ['heart','dance']]), 900);
+    addAffinity(1);
+    if (realReady){
+      likeQueue++;
+      if (!likeTimer) likeTimer = setTimeout(async () => {
+        const n = likeQueue; likeQueue = 0; likeTimer = null;
+        try { const total = await core.chat.sendLike(n); $('#likeCount').textContent = '· ' + total; }
+        catch(e){ console.warn('like failed', e); }
+      }, 2000);
+    }
+  });
+
+  /* ---------------- 宠物气泡 / 拖拽 ---------------- */
+  const bubble = $('#petBubble');
+  let tipTimer;
+  function showBubble(ms=5000){ bubble.classList.add('show'); clearTimeout(tipTimer); tipTimer=setTimeout(()=>bubble.classList.remove('show'),ms); }
+  const pet = $('#pet'), phone = document.querySelector('.phone');
+  let dragState = null, moved = false;
+  pet.addEventListener('pointerdown', e => { dragState={x:e.clientX,y:e.clientY,left:pet.offsetLeft,top:pet.offsetTop}; moved=false; pet.setPointerCapture(e.pointerId); });
+  pet.addEventListener('pointermove', e => {
+    if (!dragState) return;
+    const dx=e.clientX-dragState.x, dy=e.clientY-dragState.y;
+    if (Math.abs(dx)+Math.abs(dy)>6) moved=true;
+    if (!moved) return;
+    const rect = phone.getBoundingClientRect();
+    const left = Math.max(4, Math.min(rect.width - pet.offsetWidth - 4, dragState.left + dx));
+    const top = Math.max(70, Math.min(rect.height - pet.offsetHeight - 70, dragState.top + dy));
+    pet.style.left=left+'px'; pet.style.top=top+'px'; pet.style.right='auto'; pet.style.bottom='auto';
+  });
+  let turnIdx = 0, turning = false;
+  pet.addEventListener('dblclick', async () => {
+    if (turning) return;
+    turning = true; pet.classList.add('turning');
+    const seq = (frames['q-neutral'] ? ['q-neutral','left','back','left','q-neutral','neutral'] : ['left','back','left','neutral']);
+    for (const n of seq) { setFrame(n); await new Promise(r=>setTimeout(r,170)); }
+    pet.classList.remove('turning'); turning = false; showBubble(3000);
+  });
+  pet.addEventListener('pointerup', () => {
+    const wasDrag = moved; dragState=null;
+    if (!wasDrag){
+      sfx('pop');
+      pet.classList.add('jump'); setTimeout(()=>pet.classList.remove('jump'), 560);
+      showBubble(6000); smileFor(900);
+    }
+  });
+
+  /* ---------------- 宠物对话（本地规则演示） ---------------- */
+  const replies = [
+    { k:/你好|hi|hello/i, r:'你好呀！我是小威，保利威的虚拟形象，直播有什么问题都可以问我～' },
+    { k:/吉祥物|你是谁|小威/, r:'我是保利威娘，不过大家叫我小威。蓝白猫耳、O 播放器发饰、还戴着耳麦，随时在线陪你看直播。' },
+    { k:/讲什么|内容|课程/, r:'今天讲「开播前 30 分钟」：推流设置、PPT 准备、互动功能检查，还有常见问题排查。' },
+    { k:/报名|参加|预约/, r:'点右上角的「关注」就能预约下一场；已经开始的场次，结束后可在回放里看。' },
+    { k:/回放|重看/, r:'有的，直播结束会自动生成回放，在「回放」里能看，还支持 AI 大纲和逐字稿。' },
+    { k:/点赞|喜欢|可爱/, r:'嘿嘿，谢谢！再点两下，我们的亲密度还能涨～' },
+    { k:/价格|费用|多少钱/, r:'具体报价要商务同学来定，我先把你的问题转给助教，稍后回复你。' },
+    { k:/AI|助手|数字人/, r:'我就是用 AI 答疑助手 SDK 接进来的，生产环境里能按企业知识库回答问题。' }
+  ];
+  const fallbacks = ['这个问题我记下来啦，等讲师讲完我帮你追问～','我还在学习中，你可以换个问法，或者点下面的快捷问题试试。','好问题！我先把重点记到小本本上，直播结束后整理给你。'];
+  const pickReply = q => { for (const it of replies) if (it.k.test(q)) return it.r; return fallbacks[Math.floor(Math.random()*fallbacks.length)]; };
+  const sheetMsgs = $('#sheetMsgs');
+  function addSheet(role, text){
+    const el=document.createElement('div'); el.className='msg'+(role==='me'?' me':'');
+    const ava = role==='me' ? `<div class="avatar" style="background:linear-gradient(135deg,#8fb0ff,#355BE0)">我</div>` : `<div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div>`;
+    el.innerHTML = role==='me' ? `${ava}<div class="bubble">${escapeHtml(text)}</div>` : `${ava}<div class="bubble"><span class="name">小威</span>${escapeHtml(text)}</div>`;
+    sheetMsgs.appendChild(el); sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+  }
+  /* ---------------- Polyv AI 答疑助手（真实知识库） ---------------- */
+  // 生产建议：由同域后端代理（/api/ai），token 不下发前端；demo 用本机 8789
+  const AI = { proxy: 'http://127.0.0.1:8789' };
+  const viewerId = (() => {
+    let v = localStorage.getItem('polyv_demo_uid');
+    if (!v) { v = 'mascot-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('polyv_demo_uid', v); }
+    return v;
+  })();
+  async function askPolyvAI(question, onChunk, onMeta) {
+    const qs = new URLSearchParams({ question, viewerId });
+    const res = await fetch(AI.proxy + '/api/ai?' + qs);
+    if (!res.ok) {
+      let msg = 'AI HTTP ' + res.status;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t.startsWith('data:')) continue;
+        const raw = t.slice(5).trim();
+        if (!raw || raw === '[DONE]') continue;
+        let data;
+        try { data = JSON.parse(raw); } catch (e) { continue; }
+        if (data.error) throw new Error(data.message || 'AI 返回错误');
+        if (data.source && onMeta) onMeta(data.source);
+        if (data.content) onChunk(data.content);
+        if (data.done) return;
+      }
+    }
+  }
+  const plain = s => String(s)
+    .replace(/\*\*/g, '')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/^-\s+/gm, '· ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  let typing = false;
+  async function askPet(q) {
+    if (typing) return;
+    typing = true;
+    addSheet('me', q); addAffinity(1);
+    const el = document.createElement('div'); el.className = 'msg';
+    el.innerHTML = `<div class="avatar" style="background:url('assets/pet-smile.png') center/cover,#1a2742"></div><div class="bubble"><span class="name">小威</span><span class="typing">思考中…</span></div>`;
+    sheetMsgs.appendChild(el); sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+    if (frames['think']) pose('think', 8000);
+    const tEl = el.querySelector('.typing');
+    const nameEl = el.querySelector('.name');
+    let acc = '', firstChunk = true;
+    try {
+      await askPolyvAI(q, chunk => {
+        if (firstChunk) { firstChunk = false; clearTimeout(poseTimer); startTalk(); }
+        acc += chunk;
+        tEl.textContent = plain(acc);
+        sheetMsgs.scrollTop = sheetMsgs.scrollHeight;
+      }, src => {
+        if (nameEl) nameEl.textContent = '小威 · ' + (src === 'polyv' ? '知识库' : '闲聊');
+      });
+      if (!acc) tEl.textContent = '抱歉，我没有收到回答。';
+    } catch (e) {
+      console.warn('AI error', e);
+      if (frames['sad']) pose('sad', 1800);
+      tEl.textContent = pickReply(q) + '\n\n（AI 接口暂不可用，已切换本地话术）';
+    } finally {
+      stopTalk(); smileFor(1500); typing = false;
+    }
+  }
+  const sheet = $('#sheet');
+  const openSheet = () => { sheet.classList.add('open'); bubble.classList.remove('show'); document.getElementById('pet').classList.add('sheet-open'); hideEvent(); };
+  $('#closeSheet').addEventListener('click', ()=>{ sheet.classList.remove('open'); document.getElementById('pet').classList.remove('sheet-open'); });
+  $('#openSheet2').addEventListener('click', openSheet);
+  const inputSheet = $('#inputSheet');
+  $('#sendSheet').addEventListener('click', ()=>{ const v=inputSheet.value.trim(); if(!v) return; inputSheet.value=''; askPet(v); });
+  inputSheet.addEventListener('keydown', e=>{ if(e.key==='Enter') $('#sendSheet').click(); });
+  document.querySelectorAll('#petBubble .chip').forEach(c=>c.addEventListener('click',()=>{ openSheet(); setTimeout(()=>askPet(c.dataset.q),260); }));
+  document.querySelectorAll('.quick button').forEach(b=>b.addEventListener('click',()=>askPet(b.dataset.q)));
+
+
+  /* ---------------- 真实互动事件（观看页 SDK interactReceive） ---------------- */
+  function bindSdk(sdk, map) {
+    if (!sdk || typeof sdk.on !== 'function' || !sdk.events) return;
+    Object.keys(map).forEach(k => { const ev = sdk.events[k]; if (ev) sdk.on(ev, map[k]); });
+  }
+  async function setupInteractions() {
+    try {
+      if (!core.interactReceive) { note('当前频道未启用互动模块'); return; }
+      await core.interactReceive.setupIarCore();
+      note('直播间已连接 · 来和小威互动吧');
+      console.log('[iar] ready');
+    } catch (e) { console.warn('[iar] setup failed', e); return; }
+
+    try {
+      const ac = core.interactReceive.getAnswerCard && core.interactReceive.getAnswerCard();
+      bindSdk(ac, {
+        GET_TEST_QUESTION_CONTENT: msg => showRealQuiz(msg, ac),
+        STOP_TEST_QUESTION: () => hideEvent(),
+        GET_TEST_QUESTION_RESULT: msg => showRealQuizResult(msg, ac),
+      });
+    } catch (e) { console.warn('[iar] answerCard', e); }
+
+    try {
+      const ci = core.interactReceive.getCheckIn && core.interactReceive.getCheckIn();
+      bindSdk(ci, {
+        SIGN_IN: msg => showRealCheckin(msg, ci),
+        SIGN_IN_SUCCESS: () => { sfx('checkin'); toast('签到成功 +1'); if (frames['clap']) pose('clap', 1600); addAffinity(1); },
+        STOP_SIGN_IN: () => hideEvent(),
+        SIGN_IN_FINISH: () => hideEvent(),
+      });
+    } catch (e) { console.warn('[iar] checkIn', e); }
+
+    try {
+      const lot = core.interactReceive.getLottery && core.interactReceive.getLottery();
+      bindSdk(lot, { LotteryStart: () => showRealLottery(lot), OnLottery: () => showRealLottery(lot) });
+    } catch (e) { console.warn('[iar] lottery', e); }
+
+    try {
+      const ann = core.interactReceive.getAnnouncement && core.interactReceive.getAnnouncement();
+      bindSdk(ann, { BULLETIN: msg => showAnnouncement(msg) });
+    } catch (e) { console.warn('[iar] announcement', e); }
+  }
+
+  /* ---------- 真实事件 → 气泡 ---------- */
+  function showRealQuiz(msg, sdk) {
+    const raw = msg.options || msg.optionList || msg.items || [];
+    const opts = raw.map((o, i) => ({
+      key: o.key || o.id || o.optionKey || String.fromCharCode(65 + i),
+      text: o.value || o.content || o.text || o.name || String(o),
+    }));
+    if (!opts.length) return;
+    setTone('tone-quiz');
+    ebBadge.textContent = '答题卡 · 实时';
+    ebTitle.textContent = msg.name || msg.title || '答题开始';
+    ebResult.textContent = '';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = ''; ebOpts.dataset.done = '';
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'eb-opt'; b.textContent = o.key + '. ' + o.text;
+      b.addEventListener('click', async () => {
+        if (ebOpts.dataset.done) return;
+        sfx('pop');
+        ebOpts.dataset.done = '1';
+        [...ebOpts.children].forEach(c => { c.disabled = true; c.classList.add('disabled'); });
+        b.classList.add('right');
+        try {
+          if (sdk && typeof sdk.answerQuestion === 'function') {
+            const res = await sdk.answerQuestion([o.key]);
+            const ok = res && (res.code === 0 || res.code === 1 || res.code === 200);
+            ebResult.textContent = ok ? '已提交答案 ' + o.key : '已提交，等待结果';
+            ebResult.className = 'eb-result ' + (ok ? 'ok' : '');
+          } else {
+            ebResult.textContent = '已选择 ' + o.key;
+            ebResult.className = 'eb-result ok';
+          }
+        } catch (e) {
+          ebResult.textContent = '提交失败：' + (e.message || e);
+          ebResult.className = 'eb-result no';
+        }
+        clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 4500);
+      });
+      ebOpts.appendChild(b);
+    });
+    showBubbleCard();
+    ebSpeech(pick(['实时答题卡来啦，选一个吧～','这题是讲师刚发的，认真看哦']));
+    react(['raise-hand','point-left'], 1200);
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 25000);
+  }
+
+  function showRealQuizResult(msg, sdk) {
+    const answer = msg.answer || msg.correctAnswer || msg.rightAnswer || '';
+    const mine = (sdk && sdk.curSubmittedAnswer) ? String(sdk.curSubmittedAnswer) : '';
+    setTone('tone-quiz');
+    ebBadge.textContent = '答题结果 · 实时';
+    ebTitle.textContent = (msg.name || '答题结果') + (answer ? '（答案：' + answer + '）' : '');
+    ebResult.textContent = mine ? '你提交的是：' + mine : '结果已公布';
+    ebResult.className = 'eb-result';
+    if (mine && answer && mine.indexOf(answer) >= 0) { sfx('correct'); celebratePose(1800); ebResult.className = 'eb-result ok'; }
+    else if (mine && answer) { sfx('wrong'); pose('confused', 1500); ebResult.className = 'eb-result no'; }
+    showBubbleCard();
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 5000);
+  }
+
+  function showRealCheckin(msg, sdk) {
+    setTone('tone-checkin');
+    ebBadge.textContent = '签到 · 实时';
+    ebTitle.textContent = '签到开始';
+    ebResult.textContent = (msg && msg.data && msg.data.message) || '签到后小威给你鼓掌';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = '';
+    const b = document.createElement('button');
+    b.className = 'eb-opt primary'; b.textContent = '签到';
+    b.addEventListener('click', async () => {
+      b.disabled = true; b.textContent = '签到中…'; sfx('pop');
+      try {
+        if (sdk && typeof sdk.toCheckIn === 'function') await sdk.toCheckIn();
+        toast('签到成功 +1'); if (frames['clap']) pose('clap', 1600);
+        hideEvent();
+      } catch (e) { toast('签到失败：' + (e.message || e)); b.disabled = false; b.textContent = '重试签到'; }
+    });
+    ebOpts.appendChild(b);
+    showBubbleCard();
+    ebSpeech('签到开始啦，点一下就行～');
+    react(['wave','raise-hand'], 1100);
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 30000);
+  }
+
+  async function showRealLottery(sdk) {
+    setTone('tone-lottery');
+    ebBadge.textContent = '抽奖 · 实时';
+    ebTitle.textContent = '抽奖开始，要参加吗？';
+    ebResult.textContent = '';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = '';
+    const b = document.createElement('button');
+    b.className = 'eb-opt primary'; b.textContent = '参与抽奖';
+    b.addEventListener('click', async () => {
+      b.disabled = true; b.textContent = '参与中…';
+      try {
+        const fn = sdk && (sdk.joinLottery || sdk.applyLottery || sdk.join);
+        if (typeof fn === 'function') { sfx('lottery'); await fn.call(sdk); toast('已参与抽奖 🎁'); }
+        else toast('请在左侧抽奖面板参与');
+        if (frames['proud']) pose('proud', 1600);
+        hideEvent();
+      } catch (e) { toast('参与失败：' + (e.message || e)); b.disabled = false; b.textContent = '重试'; }
+    });
+    ebOpts.appendChild(b);
+    showBubbleCard();
+    ebSpeech('抽奖开始！我帮你盯着～');
+    react(['surprise','raise-hand'], 1100);
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 20000);
+  }
+
+  function showAnnouncement(msg) {
+    if (!msg) return;
+    setTone('tone-notice');
+    ebBadge.textContent = '公告 · 实时';
+    ebTitle.textContent = '直播公告';
+    ebResult.textContent = String(msg.content || '').slice(0, 80);
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = `<button class="eb-opt">知道了</button>`;
+    ebOpts.firstChild.addEventListener('click', hideEvent);
+    showBubbleCard();
+    sfx('notice');
+    ebSpeech('有新公告，记得看～');
+    react(['wave','point-left'], 1100);
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 12000);
+  }
+
+  // 调试：无真实事件时手动触发真实 UI 流程
+  window.__iarDemo = {
+    quiz: () => showRealQuiz({ name: '小威实时答题卡（调试）', options: [
+      { key: 'A', value: '网络与推流' }, { key: 'B', value: 'PPT 素材' },
+      { key: 'C', value: '互动功能' }, { key: 'D', value: '以上都是' }] }, { answerQuestion: async () => ({ code: 1 }) }),
+    checkin: () => showRealCheckin({ data: { message: '签到后小威给你鼓掌' } }, { toCheckIn: async () => {} }),
+    lottery: () => showRealLottery({ joinLottery: async () => {} }),
+    announcement: () => showAnnouncement({ content: '今晚 20:00 加播一场，记得来看～' }),
+  };
+
+  /* ---------------- 直播间事件 → 宠物气泡 ---------------- */
+  const eb = $('#eventBubble');
+  const ebBadge = $('#ebBadge'), ebTitle = $('#ebTitle'), ebOpts = $('#ebOpts'), ebResult = $('#ebResult');
+  let ebTimer = null;
+  function hideEvent() { eb.classList.remove('show'); clearTimeout(ebTimer); }
+  $('#ebClose').addEventListener('click', hideEvent);
+
+  function petReact(kind) {
+    const pet = $('#pet');
+    if (kind === 'happy') { pet.classList.add('jump'); setTimeout(()=>pet.classList.remove('jump'), 560); smileFor(1800); }
+    if (kind === 'wrong') { pet.classList.add('shake'); setTimeout(()=>pet.classList.remove('shake'), 500); setFrame('blink'); setTimeout(()=>setFrame('neutral'), 220); }
+  }
+  function showBubbleCard(html) {
+    eb.classList.add('show');
+    sfx('pop');
+    clearTimeout(ebTimer);
+  }
+
+  function showQuiz() {
+    setTone('tone-quiz');
+    ebBadge.textContent = '答题卡';
+    ebTitle.textContent = '开播前需要检查哪些内容？';
+    ebResult.textContent = '';
+    ebOpts.innerHTML = '';
+    const opts = [
+      { t: 'A. 网络与推流地址', ok: false },
+      { t: 'B. PPT 与素材', ok: false },
+      { t: 'C. 互动功能开关', ok: false },
+      { t: 'D. 以上都是', ok: true },
+    ];
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'eb-opt'; b.textContent = o.t;
+      b.addEventListener('click', () => {
+        if (ebOpts.dataset.done) return;
+        sfx('pop');
+        ebOpts.dataset.done = '1';
+        [...ebOpts.children].forEach(c => { c.disabled = true; c.classList.add('disabled'); });
+        b.classList.add(o.ok ? 'right' : 'wrong');
+        if (o.ok) {
+          sfx('correct');
+          ebResult.textContent = '答对啦！这四样都要检查 ✅';
+          ebResult.className = 'eb-result ok';
+          ebSpeech(pick(['太棒了！这四样都要检查～','答对啦，给你比个心！','我就知道你会！']));
+          react(pick([['celebrate','laugh'], ['q-celebrate','heart'], ['celebrate','proud']]));
+          addAffinity(2); toast('小威为你鼓掌 👏');
+        } else {
+          sfx('wrong');
+          ebResult.textContent = '差一点～答案是 D（以上都是）';
+          ebResult.className = 'eb-result no';
+          ebSpeech(pick(['差一点点，下次一定！','没关系，我陪你再看一遍～']));
+          react(pick([['confused','shrug'], ['confused','sad'], ['shrug','blink']]));
+        }
+        clearTimeout(ebTimer);
+        ebTimer = setTimeout(hideEvent, 4200);
+      });
+      ebOpts.appendChild(b);
+    });
+    ebOpts.dataset.done = '';
+    showBubbleCard();
+    ebSpeech(pick(['来，先看这题～','这题我会！你选哪个？','准备答题啦，我看好你～']));
+    react(pick([['raise-hand','point-left'], ['surprise','point-left'], ['point-left','think']]));
+    clearTimeout(ebTimer);
+    ebTimer = setTimeout(hideEvent, 15000);
+  }
+
+  function showQuestion(q) {
+    setTone('tone-question');
+    ebBadge.textContent = '观众提问';
+    ebTitle.textContent = '有同学问：' + q;
+    ebResult.textContent = '要我来回答吗？';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = '';
+    const yes = document.createElement('button');
+    yes.className = 'eb-opt primary'; yes.textContent = '让小威回答';
+    yes.addEventListener('click', () => { hideEvent(); openSheet(); setTimeout(()=>askPet(q), 260); });
+    const no = document.createElement('button');
+    no.className = 'eb-opt'; no.textContent = '先忽略';
+    no.addEventListener('click', hideEvent);
+    ebOpts.appendChild(yes); ebOpts.appendChild(no);
+    showBubbleCard();
+    sfx('question');
+    ebSpeech(pick(['有同学提问啦，我看看～','这个问题我来！','交给我吧～']));
+    react(pick([['raise-hand','chin'], ['raise-hand','think'], ['surprise','raise-hand']]));
+    clearTimeout(ebTimer);
+    ebTimer = setTimeout(hideEvent, 12000);
+  }
+
+  function showCheckin() {
+    setTone('tone-checkin');
+    ebBadge.textContent = '签到';
+    ebTitle.textContent = '签到开始';
+    ebResult.textContent = '点击下方按钮完成签到';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = '';
+    ebSpeech(pick(['今天也来啦～','来签到啦，点我！','又见面啦，今天也要加油！']));
+    const btn = document.createElement('button');
+    btn.className = 'eb-opt primary'; btn.textContent = '点我签到';
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      btn.disabled = true; btn.textContent = '已签到 ✓';
+      sfx('checkin');
+      ebTitle.textContent = '签到成功 +1';
+      ebResult.textContent = '连续签到 3 天啦，继续保持～';
+      ebResult.className = 'eb-result ok';
+      ebSpeech(pick(['签到成功，给你鼓掌！','连续 3 天啦，太棒了！']));
+      react(pick([['wave','clap'], ['clap','heart'], ['raise-hand','clap']]), 1100);
+      addAffinity(1);
+      clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 4200);
+    });
+    ebOpts.appendChild(btn);
+    showBubbleCard();
+    react(['wave','raise-hand'], 1100);
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 30000);
+  }
+
+  function showLottery() {
+    setTone('tone-lottery');
+    ebBadge.textContent = '抽奖';
+    ebTitle.textContent = '抽奖开始，要参加吗？';
+    ebResult.textContent = '参与条件：观看满 5 分钟';
+    ebResult.className = 'eb-result';
+    ebOpts.innerHTML = '';
+    const join = document.createElement('button');
+    join.className = 'eb-opt primary'; join.textContent = '参与抽奖';
+    join.addEventListener('click', () => { hideEvent(); toast('已参与抽奖，祝你好运 🎁'); ebSpeech('已经帮你报名啦，等开奖！'); react(['proud','heart']); addAffinity(1); });
+    const skip = document.createElement('button');
+    skip.className = 'eb-opt'; skip.textContent = '下次再说';
+    skip.addEventListener('click', hideEvent);
+    ebOpts.appendChild(join); ebOpts.appendChild(skip);
+    showBubbleCard();
+    sfx('lottery');
+    ebSpeech(pick(['抽奖开始！要试试手气吗？','冲呀，说不定就中了～']));
+    react(pick([['surprise','raise-hand'], ['surprise','heart']]));
+    clearTimeout(ebTimer); ebTimer = setTimeout(hideEvent, 12000);
+  }
+
+  /* ---------------- 一键演示 ---------------- */
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  let demoRunning = false;
+  async function runDemo() {
+    if (demoRunning) return;
+    demoRunning = true;
+    const btn = $('#demoRun');
+    btn.textContent = '演示中…';
+    try {
+      toast('演示开始：小威上场');
+      pose('wave', 1500);
+      await wait(1600);
+      showQuiz();
+      await wait(1500);
+      const correct = document.querySelectorAll('.eb-opt')[3];
+      if (correct) correct.click();
+      await wait(2400);
+      showQuestion('吉祥物是谁？');
+      await wait(1400);
+      const yes = document.querySelector('#ebOpts .eb-opt.primary');
+      if (yes) yes.click();
+      await wait(1200);
+    } finally {
+      btn.textContent = '▶ 演示';
+      demoRunning = false;
+    }
+  }
+  $('#demoRun').addEventListener('click', runDemo);
+  if (new URLSearchParams(location.search).get('auto') === '1') {
+    setTimeout(runDemo, 3500);
+  }
+
+  // 录制/演示控制（供自动化脚本调用）
+  window.__demoCtl = {
+    quiz: showQuiz,
+    question: showQuestion,
+    checkin: showCheckin,
+    lottery: showLottery,
+    realQuiz: () => window.__iarDemo.quiz(),
+    pose,
+    frame: n => { mode = 'pose'; setFrame(n); },
+    hide: hideEvent,
+    open: openSheet,
+    ask: q => { openSheet(); setTimeout(() => askPet(q), 260); },
+    close: () => { sheet.classList.remove('open'); document.getElementById('pet').classList.remove('sheet-open'); },
+    caption: t => {
+      let el = document.getElementById('vidCap');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'vidCap';
+        el.style.cssText = 'position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:200;max-width:360px;text-align:center;background:rgba(6,12,24,.84);border:1px solid rgba(120,160,255,.35);border-radius:14px;padding:8px 14px;font:600 12.5px/1.45 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#dbe7ff;box-shadow:0 8px 24px rgba(0,0,0,.45)';
+        document.querySelector('.app').appendChild(el);
+      }
+      el.textContent = t;
+    },
+  };
+
+  $('#giftBtn').addEventListener('click', () => {
+    sfx('gift');
+    action('spin', 950); toast('谢谢你的礼物！🎁'); petSay(pick(['哇！谢谢老板的礼物～','礼物收到，转个圈给你看！']));
+    for (let i=0;i<3;i++){ const h=document.createElement('div'); h.className='heart-fly'; h.textContent='💙'; h.style.left=(260+Math.random()*60)+'px'; h.style.top=(660+Math.random()*40)+'px'; h.style.animationDelay=(i*.08)+'s'; document.querySelector('.phone').appendChild(h); setTimeout(()=>h.remove(),1600); }
+  });
+
+  /* ---------------- 其他 ---------------- */
+  $('#followBtn').addEventListener('click', e => {
+    e.target.textContent='已关注'; e.target.style.background='rgba(255,255,255,.15)';
+    sfx('follow'); toast('已预约下一场直播'); petSay(pick(['谢谢关注～下次直播见！','收到关注啦，开心！'])); react(pick([['wave','proud'], ['wave','heart']])); addAffinity(1);
+  });
+  let toastTimer;
+  function toast(text){ const el=$('#toast'); el.textContent=text; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),1800); }
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopTalk(); });
+
+  window.__pet = { get mode(){ return mode; }, get src(){ return petImg.getAttribute('src'); }, pose };
+  setInterval(() => {
+    if (mode !== 'idle' || sheet.classList.contains('open') || eb.classList.contains('show')) return;
+    const pool = ['smile', 'q-smile', 'chin', 'q-neutral', 'blink', 'laugh'];
+    const name = pick(pool);
+    if (frames[name]) pose(name, 1600);
+  }, 8000);
+
+  scheduleBlink();
+  setTimeout(()=>showBubble(5000), 1200);
+  boot();
+})();
+</script>
+</body>
+</html>
